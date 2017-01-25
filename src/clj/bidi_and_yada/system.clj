@@ -1,9 +1,8 @@
-(ns moop.core
+(ns bidi-and-yada.system
   (:require [com.stuartsierra.component :as component]
             [taoensso.timbre :as log]
-            [moop.config :refer [app-config logging-config]]
-            [yada.yada :as yada])
-  (:gen-class :main true))
+            [bidi-and-yada.config :refer [app-config logging-config]]
+            [yada.yada :as yada]))
 
 (defrecord YadaWebservice [id port routes server]
   component/Lifecycle
@@ -42,24 +41,14 @@
        {:get
         {:produces
          {:media-type "text/plain"
+
           :language #{"en" "zh-ch;q=0.9"}}
          :response (fn [request]
                      (case (yada/language request)
-                       "zh-ch" "你好世界\n"
-                       "en" "Hello World!\n"))}}})]
+                       "jp-jp" "Konnichiwa sekai!\n"
+                       "it-it" "Buongiorno, mondo!\n"
+                       "en" "Hello world!\n"))}}})]
     [true (yada/handler nil)]]])
 
 (defn system [config]
   {:app (yada-webservice config routes)})
-
-(defn print-usage
-  []
-  (println (str "Usage: java -jar moop.jar server [env]"))
-  (println "  env = environment key (dev, test, or production)"))
-
-(defn -main
-  [& args]
-  (if (= 1 (count args))
-    (let [config (app-config (keyword (first args)))]
-      (component/start-system (system config)))
-    (print-usage)))

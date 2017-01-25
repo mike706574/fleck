@@ -1,4 +1,4 @@
-(ns moop.config
+(ns bidi-and-yada.config
   (:require [clojure.string :refer [upper-case]]
             [taoensso.timbre :as log]))
 
@@ -25,11 +25,11 @@
    :output-fn thread-name-output-fn})
 
 (def environments
-  {:dev {:id "moop"
+  {:dev {:id "bidi-and-yada"
          :port 8054}
-   :test {:id "moop"
+   :test {:id "bidi-and-yada"
           :port 8054}
-   :production {:id "moop"
+   :production {:id "bidi-and-yada"
                 :port 8054}})
 
 (defn app-config
