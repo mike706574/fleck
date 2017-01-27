@@ -11,11 +11,12 @@
    [clojure.string :as str]
    [clojure.test :as test]
    [clojure.tools.namespace.repl :refer [refresh refresh-all]]
+   [clojure.data.json :as json]
    [com.stuartsierra.component :as component]
    [bidi-and-yada.system :as system]
    [clj-http.client :as http]))
 
-(def config {:id "bidi-and-yada" :port 8082})
+(def config {:id "bidi-and-yada" :port 8080})
 
 (defonce system
   (system/system config))
@@ -57,13 +58,6 @@
   (stop)
   (go))
 
-;; scratchpad
-(comment
-  system
-
-  (http/get "http://localhost:8082/hello-language" {:headers {"Accept-Language" "ja-jp"}
-                                                    :throw-exceptions false
-                                                    })
-
-
-  )
+(comment :scratch
+  (http/get "http://localhost:8080/api/hello" {:throw-exceptions false})
+  (json/read-str (:body (http/get "http://localhost:8080/api/swagger.json" {:throw-exceptions false}))))

@@ -5,7 +5,6 @@
                  [aleph "0.4.1"]
                  [yada "1.2.0"]
                  [bidi "2.0.16"]]
-
   :source-paths ["src/clj"]
   :test-paths ["test/clj"]
   :profiles {:uberjar {:aot :all

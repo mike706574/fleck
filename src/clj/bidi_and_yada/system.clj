@@ -1,28 +1,34 @@
 (ns bidi-and-yada.system
-  (:require [com.stuartsierra.component :as component]
-            [taoensso.timbre :as log]
-            [bidi-and-yada.config :refer [app-config logging-config]]
+  (:require [taoensso.timbre :as log]
             [yada.yada :as yada]
-            [bidi-and-yada.service :as service]
-            ))
+            [bidi.bidi :as bidi]
+            [bidi-and-yada.service :as service]))
 
-(def routes
-  [""
-   [["/hello"
-     (yada/resource
-      {:methods
-       {:get
-        {:produces
-         {:media-type "text/plain"
+(defn hello-routes
+  []
+  ["/hello" (yada/resource
+             {:methods
+              {:get
+               {:produces
+                {:media-type "text/plain"
+                 :language #{"en" "ja-jp;q=0.9" "it-it;q=0.9"}}
+                :response (fn [request]
+                            (log/info "Saying hello!")
+                            (case (yada/language request)
+                              "en" "Hello, world!\n"
+                              "it-it" "Buongiorno, mondo!\n"
+                              "ja-jp" "Konnichiwa sekai!\n"))}}})])
 
-          :language #{"en" "ja-jp;q=0.9" "it-it;q=0.9"}}
-         :response (fn [request]
-                     (case (yada/language request)
-                       "ja-jp" "Konnichiwa sekai!\n"
-                       "it-it" "Buongiorno, mondo!\n"
-                       "en" "Hello world!\n"))}}})]
-    [true (yada/handler nil)]]])
+(defn routes
+  []
+  ["/api" (-> (hello-routes)
+                   (yada/swaggered
+                    {:info {:title "Hello API"
+                            :version "1.0"
+                            :description "An API"}
+                     :basePath "/api"})
+                   (bidi/tag :hello.resources/api))])
 
 (defn system
   [config]
-  {:app (service/yada-service config routes)})
+  {:app (service/yada-service config (routes))})
