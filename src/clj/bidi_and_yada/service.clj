@@ -28,5 +28,6 @@
 (defn yada-service
   [{:keys [port] :as config} routes]
   {:pre [(integer? port)
-         (> port 0)]}
+         (> port 0)
+         (vector? routes)]}
   (component/using (map->YadaService (assoc config :routes routes)) []))
