@@ -1,6 +1,8 @@
 # bidi-and-yada
 
-An example webservice using [Juxt's](https://juxt.pro/) [yada](https://github.com/juxt/yada) and [bidi](https://github.com/juxt/bidi). Also uses [component](https://github.com/stuartsierra/component) for life and dependency management and [timbre](https://github.com/ptaoussanis/timbre) for logging.
+An example webservice using [Juxt's](https://juxt.pro/) [yada](https://github.com/juxt/yada) and [bidi](https://github.com/juxt/bidi).
+
+Also uses [component](https://github.com/stuartsierra/component) for life and dependency management and [timbre](https://github.com/ptaoussanis/timbre) for logging.
 
 ## Copyright and License
 
