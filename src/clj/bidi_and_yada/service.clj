@@ -7,22 +7,22 @@
   component/Lifecycle
   (start [this]
     (if server
-      (do (println "Already started.")
+      (do (log/info "Already started.")
           this)
-      (do (println (str "Starting " id " on port " port "..."))
+      (do (log/info (str "Starting " id " on port " port "..."))
 
           (let [this (assoc this :server
                             (aleph.http/start-server
                              (bidi.ring/make-handler routes)
                              {:port port}))]
-            (println (str "Finished starting."))
+            (log/info (str "Finished starting."))
             this))))
   (stop [this]
     (if server
-      (do (println (str "Stopping " id " on port " port "..."))
+      (do (log/info (str "Stopping " id " on port " port "..."))
           (.close server)
           (assoc this :server nil))
-      (do (println "Already stopped.")
+      (do (log/info "Already stopped.")
           this))))
 
 (defn yada-service
