@@ -22,12 +22,12 @@
 (defn routes
   []
   ["/api" (-> (hello-routes)
-                   (yada/swaggered
-                    {:info {:title "Hello API"
-                            :version "1.0"
-                            :description "An API"}
-                     :basePath "/api"})
-                   (bidi/tag :hello.resources/api))])
+              (yada/swaggered
+               {:info {:title "Hello API"
+                       :version "1.0"
+                       :description "An API"}
+                :basePath "/api"})
+              (bidi/tag :hello.resources/api))])
 
 (defn system
   [config]
