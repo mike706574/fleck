@@ -27,7 +27,8 @@
                        :version "1.0"
                        :description "An API"}
                 :basePath "/api"})
-              (bidi/tag :hello.resources/api))])
+              (bidi/tag :hello.resources/api))
+   true (yada/handler nil)])
 
 (defn system
   [config]
