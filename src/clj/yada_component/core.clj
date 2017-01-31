@@ -1,4 +1,4 @@
-(ns bidi-and-yada.service
+(ns yada-component.core
   (:require [com.stuartsierra.component :as component]
             [taoensso.timbre :as log]
             [yada.yada :as yada]
