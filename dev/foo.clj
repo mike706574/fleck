@@ -1,4 +1,4 @@
-(ns foo
+(ns foop
   "Tools for interactive development with the REPL. This file should
   not be included in a production build of the application."
   (:require
@@ -17,56 +17,105 @@
    [clj-http.client :as http]
    [taoensso.timbre :as log]))
 
-(def video-root "/home/mike/video/movie")
+(def video-root "/home/mike/sandbox/clojure/fleck/video/movie")
 
 (def alphabet (map (comp str char) (range 97 123)))
 
-(defmacro functionize [macro]
-  `(fn [& args#] (eval (cons '~macro args#))))
 
-(def ^:dynamic *report-fn* (fn [args] (apply (functionize log/debug) args)))
 
-(defn video?
-  [item]
-  ;; TODO: Bad!
-  (let [path (.getAbsolutePath item)
-        video? (.endsWith path ".avi")]
-    (log/debug (str "Is " path " a video? " video?))
-    video?))
 
-(defn report
-  [value & args]
-  (*report-fn* args)
-  value)
+(defn file-type?
+  [exts file]
+  (let [path (.getAbsolutePath file)]
+    (boolean (some (fn [ext] (.endsWith path ext)) exts))))
+
+(def video-exts [".mkv" ".avi" ".mp4"])
+(def video? (partial file-type? video-exts))
+
+(def subtitle-exts [".srt"])
+(def subtitle? (partial file-type? subtitle-exts))
+
+(def file-classes
+  {:video video?
+   :subtitle subtitle?})
+
+(defn classify-file
+  [file]
+  (letfn [(this-class? [[k f]]
+            (f file))]
+    (first (first (filter this-class? file-classes)))))
+
+(comment :classify-file
+  (= :video (classify-file (io/file "ok.avi")))
+  (= :subtitle (classify-file (io/file "ok.srt")))
+  (nil? (classify-file (io/file "foo"))))
+
+(def ^:dynamic *return-hook*
+  (fn [_ _ message]
+    (when message (log/debug message))))
+
+(defn return
+  ([status value]
+   (return status value nil))
+  ([status value message]
+   (*return-hook* status value message)
+   [status value]))
+
+(def ^:dynamic *accept-hook*
+  (fn [_ message]
+    (when message) (log/debug message)))
+
+(defn accept
+  ([value]
+   (accept value nil))
+  ([value message]
+   (*accept-hook* value message)
+   [:ok value]))
+
+(def ^:dynamic *reject-hook*
+  (fn [_ message]
+    (when message (log/error message))))
+
+(defn reject
+  ([value]
+   (reject value nil))
+  ([value message]
+   (*reject-hook* value message)
+   [:error value]))
 
 (defn parse-item
-  [file]
+  [category file]
   (log/debug (str "Processing " (.getAbsolutePath file) "."))
-  (if (.isFile file)
-    (let [path (.getAbsolutePath file)]
-      (log/debug (str path " is a file."))
-      {:path path})
-    (let [items (.listFiles file)
-          videos (filter video? items)]
-      (if (= (count videos) 1)
-        {:path (.getAbsolutePath (first videos))}
-        (throw (ex-info (str "WHAT!") {:videos videos}))))))
+  (let [path (.getAbsolutePath file)]
+    (if (.isFile file)
+      (accept {:path path
+               :category category}
+               (str path " is a file."))
+      (let [items (.listFiles file)
+            {:keys [video subtitle]} (group-by classify-file items)]
+        (if (= (count video) 1)
+          (accept {:path (.getAbsolutePath (first video))
+                   :category category
+                   :subtitles (mapv #(.getAbsolutePath %) subtitle)}
+                  (str "Found single video."))
+          (return :multiple-videos
+                  {:path path
+                   :videos video}
+                  "Multiple videos found."))))))
 
 (defn parse-letter
   [root category letter]
   (let [path (str root "/" category "/" letter)
         letter-file (io/file path)]
     (if-not (.exists letter-file)
-      (report [] (str "Letter directory " path " not found."))
+      (accept [] (str "Letter directory " path " not found."))
       (let [key-category (keyword category)
+            parse-item (partial parse-item category)
             listing (.listFiles letter-file)]
-        (println listing)
-        (->> listing
-             (map parse-item)
-             (map #(assoc % :category key-category)))))))
+        (mapv parse-item listing)))))
 
 (parse-letter video-root "unwatched" "c")
-(parse-letter video-root "unwatched" "d")
+(doall (parse-letter video-root "unwatched" "d"))
 
 (defn parse
   [root sub]
