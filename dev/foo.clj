@@ -15,14 +15,13 @@
    [com.stuartsierra.component :as component]
    [fleck.system :as system]
    [clj-http.client :as http]
-   [taoensso.timbre :as log]))
+   [taoensso.timbre :as log]
+
+   [fleck.message :refer [return accept reject]]))
 
 (def video-root "/home/mike/sandbox/clojure/fleck/video/movie")
 
 (def alphabet (map (comp str char) (range 97 123)))
-
-
-
 
 (defn file-type?
   [exts file]
@@ -50,47 +49,15 @@
   (= :subtitle (classify-file (io/file "ok.srt")))
   (nil? (classify-file (io/file "foo"))))
 
-(def ^:dynamic *return-hook*
-  (fn [_ _ message]
-    (when message (log/debug message))))
-
-(defn return
-  ([status value]
-   (return status value nil))
-  ([status value message]
-   (*return-hook* status value message)
-   [status value]))
-
-(def ^:dynamic *accept-hook*
-  (fn [_ message]
-    (when message) (log/debug message)))
-
-(defn accept
-  ([value]
-   (accept value nil))
-  ([value message]
-   (*accept-hook* value message)
-   [:ok value]))
-
-(def ^:dynamic *reject-hook*
-  (fn [_ message]
-    (when message (log/error message))))
-
-(defn reject
-  ([value]
-   (reject value nil))
-  ([value message]
-   (*reject-hook* value message)
-   [:error value]))
-
 (defn parse-item
   [category file]
   (log/debug (str "Processing " (.getAbsolutePath file) "."))
   (let [path (.getAbsolutePath file)]
     (if (.isFile file)
-      (accept {:path path
-               :category category}
-               (str path " is a file."))
+      (let [video? (video? file)]
+        (return (if video? :ok :not-a-video)
+                {:path path :category category}
+                (str path " is" (when-not video? " not ") "a video.")))
       (let [items (.listFiles file)
             {:keys [video subtitle]} (group-by classify-file items)]
         (if (= (count video) 1)
@@ -116,7 +83,6 @@
 
 (parse-letter video-root "unwatched" "c")
 (doall (parse-letter video-root "unwatched" "d"))
-
 (defn parse
   [root sub]
   (let [parse-letter (partial parse-letter root sub)]
