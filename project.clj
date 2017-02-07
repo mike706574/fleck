@@ -6,6 +6,7 @@
                  [yada "1.2.0"]
                  [bidi "2.0.16"]
                  [environ "1.1.0"]
+                 [prismatic/schema "1.1.3"]
 ;;                 [mike/yada-component "0.0.1-SNAPSHOT"]
                  ]
   :min-lein-version "2.0.0"

@@ -2,26 +2,47 @@
   (:require [taoensso.timbre :as log]
             [yada.yada :as yada]
             [bidi.bidi :as bidi]
-            [yada-component.core :as yada-component]))
+            [yada-component.core :as yada-component]
+            [fleck.store :as store]))
 
-(defn hello-routes
+(def video-root "/home/mike/sandbox/clojure/fleck/video/movie")
+
+(defn video-routes
   []
   ["/hello" (yada/resource
-             {:methods
+              {:access-control
+               {:allow-origin "*"
+                :allow-credentials false
+                :expose-headers #{"X-Custom"}
+                :allow-methods #{:get :post}
+                :allow-headers ["Api-Key"]}
+              :methods
               {:get
                {:produces
-                {:media-type "text/plain"
-                 :language #{"en" "ja-jp;q=0.9" "it-it;q=0.9"}}
+                {:media-type #{"text/plain"}
+                 :language #{"en"}}
                 :response (fn [request]
                             (log/info "Saying hello!")
-                            (case (yada/language request)
-                              "en" "Hello, world!\n"
-                              "it-it" "Buongiorno, mondo!\n"
-                              "ja-jp" "Konnichiwa sekai!\n"))}}})])
+                            "Hello")}}})
+   "/videos" (yada/resource
+              {:access-control
+               {:allow-origin "*"
+                :allow-credentials false
+                :expose-headers #{"X-Custom"}
+                :allow-methods #{:get :post}
+                :allow-headers ["Api-Key"]}
+              :methods
+              {:get
+               {:produces
+                {:media-type #{"application/edn" "application/json"}
+                 :language #{"en"}}
+                :response (fn [request]
+                            (log/info "Returning videos!")
+                            (store/parse-category-dir video-root "unwatched"))}}})])
 
 (defn routes
   []
-  ["/api" (-> (hello-routes)
+  ["/api" (-> (video-routes)
               (yada/swaggered
                {:info {:title "Hello API"
                        :version "1.0"

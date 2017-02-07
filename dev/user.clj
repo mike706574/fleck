@@ -16,7 +16,7 @@
    [fleck.system :as system]
    [clj-http.client :as http]))
 
-(def config {:id "fleck" :port 8080})
+(def config {:id "fleck" :port 8081})
 
 (defonce system
   (system/system config))
@@ -82,7 +82,7 @@
    [fleck.system :as system]
    [clj-http.client :as http]))
 
-(def config {:id "fleck" :port 8080})
+(def config {:id "fleck" :port 8081})
 
 (defonce system
   (system/system config))
@@ -128,5 +128,6 @@
   (go))
 
 (comment :scratch
-  (http/get "http://localhost:8080/api/hello" {:throw-exceptions false})
-  (json/read-str (:body (http/get "http://localhost:8080/api/swagger.json" {:throw-exceptions false}))))
+         (json/read-str (:body (http/get "http://localhost:8081/api/videos" {:throw-exceptions false})))
+
+)
