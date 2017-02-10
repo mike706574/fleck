@@ -1,8 +1,6 @@
-# bidi-and-yada
+# fleck
 
-An example webservice using [JUXT](https://juxt.pro/)'s [bidi](https://github.com/juxt/bidi) and [yada](https://github.com/juxt/yada).
-
-Also uses [component](https://github.com/stuartsierra/component) for life and dependency management and [timbre](https://github.com/ptaoussanis/timbre) for logging.
+A project.
 
 ## Copyright and License
 
