@@ -1,4 +1,4 @@
-(ns fleck.io
+(ns flim.io
   (:require ;;[clojure.java.io :as io]
             [potemkin :refer [import-vars]]))
 

@@ -1,15 +1,15 @@
-(ns fleck.system
+(ns flim.system
   (:require [taoensso.timbre :as log]
             [yada.yada :as yada]
             [bidi.bidi :as bidi]
             [yada-component.core :as yada-component]
-            [fleck.store :as store]))
+            [flim.store :as store]))
 
-(def video-root "/mnt/Mammoth")
+(def movie-root "/mnt/Mammoth")
 
 (defn routes
-  []
-  ["" [["/videos" (yada/resource
+  [state]
+  ["" [["/movies" (yada/resource
                    {:access-control {:allow-origin "*"}
                     :methods
                     {:get
@@ -17,10 +17,12 @@
                       {:media-type #{"application/edn" "application/json"}
                        :language #{"en"}}
                       :response (fn [request]
-                                  (log/info "Returning videos!")
-                                  (store/parse-everything video-root))}}})]
+                                  (if (nil?
+                                       ))
+                                  (log/info "Returning movies!")
+                                  (store/parse-everything movie-root))}}})]
        [true (yada/handler nil)]]])
 
 (defn system
   [config]
-  {:app (yada-component/yada-service config (routes))})
+  {:app (yada-component/yada-service config (routes (atom nil)))})
