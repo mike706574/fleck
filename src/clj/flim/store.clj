@@ -1,4 +1,5 @@
 (ns flim.store
+  (:refer-clojure :exclude [load])
   (:require [flim.io :as io]
             [clojure.string :as str]
             [taoensso.timbre :as log]
@@ -6,16 +7,10 @@
 
 (def alphabet (mapv (comp str char) (range 97 123)))
 
-(defn- string-or-file?
-  [x]
-  (or (string? x)
-      (instance? java.io.File x)))
-
 (defn file-type?
   [exts file]
   {:pre [(seq exts)
-         (every? string? exts)
-         (string-or-file? file)]}
+         (every? string? exts)]}
   (let [path (io/absolute file)]
     (boolean (some (fn [ext] (.endsWith path ext)) exts))))
 
@@ -27,7 +22,6 @@
 
 (defn classify-file
   [file]
-  {:pre (string-or-file? file)}
   (cond
     (movie? file) :movie
     (subtitles? file) :subtitles
@@ -68,6 +62,6 @@
   [root category]
   (flatten (map (partial parse-letter root category) alphabet)))
 
-(defn parse-everything
+(defn load
   [root]
   (flatten (map (partial parse-category root) ["watched" "unwatched"])))

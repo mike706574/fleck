@@ -1,11 +1,31 @@
 (ns flim.io
-  (:require ;;[clojure.java.io :as io]
-            [potemkin :refer [import-vars]]))
+  (:refer-clojure :exclude [name list])
+  (:require [clojure.java.io :as io]
+            [potemkin :as potemkin]))
 
 (potemkin/import-vars
   [clojure.java.io
     file
-    copy])
+    copy
+    make-parents])
+
+(defn delete
+  [arg]
+  (io/delete-file arg))
+
+(defn delete-recursively
+  [arg]
+  (doseq [child (reverse (file-seq (file file)))]
+    (delete child)))
+
+(defn make-directory
+  [arg]
+  (.mkdir (file file)))
+
+(defn touch
+  [file]
+  (make-parents file)
+  (.createNewFile (file file)))
 
 (defn name
   [arg]

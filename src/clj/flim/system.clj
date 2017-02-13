@@ -3,9 +3,20 @@
             [yada.yada :as yada]
             [bidi.bidi :as bidi]
             [yada-component.core :as yada-component]
-            [flim.store :as store]))
+            [flim.store :as store]
+            [flim.info :as info]))
 
 (def movie-root "/mnt/Mammoth")
+
+(defn merge-info
+  [{:keys [status title] :as movie}]
+  (merge movie
+         (when (= status :ok)
+           (let [{:keys [status body]} (info/retrieve title)]
+             (if (= status :ok)
+               (assoc body :status status)
+               {:status status :info-error body})))))
+
 
 (defn routes
   [state]
@@ -17,10 +28,11 @@
                       {:media-type #{"application/edn" "application/json"}
                        :language #{"en"}}
                       :response (fn [request]
-                                  (if (nil?
-                                       ))
                                   (log/info "Returning movies!")
-                                  (store/parse-everything movie-root))}}})]
+                                  (->> movie-root
+                                      (store/load)
+                             ;;         (map merge-info)
+                                      ))}}})]
        [true (yada/handler nil)]]])
 
 (defn system

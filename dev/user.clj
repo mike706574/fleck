@@ -89,37 +89,4 @@
 
          (take 3 (json/read-str (:body (http/get "http://192.168.1.141:8000/movies")) :key-fn keyword))
 
-         {:name "About Time",
-  :directory "/mnt/Mammoth/watched/a/About Time",
-  :status "ok",
-  :file "About Time.mp4",
-  :letter "a",
-  :category "watched"}
-
-         "http://www.omdbapi.com/?t=about+time&y=&plot=short&r=json"
-
-         (http/get "http://www.omdbapi.com" {:query-params {"t" "about time"
-                                                            "plot" "short"
-                                                            "r" "json"}})
-
-
-curl --request GET \  --url 'https://api.themoviedb.org/4/list/1' \  --header 'Authorization: Bearer {access_token}' \  --header 'Content-Type: application/json;charset=utf-8'
-
-(defn search-movie
-  [query]
-  (let [{:keys [status body] :as response}
-        (http/get "https://api.themoviedb.org/3/search/movie"
-                  {:query-params {"query" query
-                                  "api_key" "7197608cef1572f5f9e1c5b184854484"}
-                   :headers {"Content-Type" "application/json;charset=utf8"}
-                   :throw-exceptions false})]
-    (case status
-      200 {:status :ok :body (json/read-str body :key-fn keyword)}
-      404 {:status :not-found :body body}
-      {:status :error :body body})))
-
-(search-movie "about time")
-
-
-
          )
