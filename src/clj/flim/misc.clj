@@ -1,6 +1,7 @@
-(ns flim.misc)
+(ns flim.misc
+  (:require [clojure.string :as str]))
 
-(defn- split-on
+(defn split-on
   [pred coll]
   (reduce
    (fn [[yes no] item]
@@ -10,5 +11,16 @@
    (list (list) (list))
    coll))
 
-(defn- prop= [k v]
-  (fn [map] (= (get map k) v)))
+(defn mapback
+  [f coll]
+  (into (empty coll) (map f coll)))
+
+(defn fmap
+  [f m]
+  (into (empty m) (for [[k v] m] [k (f v)])))
+
+(defn ellipsis
+  [length string]
+  (if (> (count string) length)
+    (str (str/trim (str/join (take length string))) "...")
+    string))

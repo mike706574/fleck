@@ -19,5 +19,3 @@
   [s]
   {:pre [(> (count s) 2)]}
   (str (first s) (str/join (shuffle (vec (subs s 1))))))
-
-(shuffle-rest "remote")

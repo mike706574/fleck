@@ -1,11 +1,10 @@
-(ns flim.store
+(ns flim.storage
   (:refer-clojure :exclude [load])
   (:require [flim.io :as io]
             [clojure.string :as str]
-            [taoensso.timbre :as log]
-            [com.stuartsierra.component :as component]))
+            [taoensso.timbre :as log]))
 
-(def alphabet (mapv (comp str char) (range 97 123)))
+(def alphabet ["A" "B" "C" "D" "E" "F" "G" "H" "I" "J" "K" "L" "M" "N" "O" "P" "Q" "R" "S" "T" "U" "V" "W" "X" "Y" "Z"])
 
 (defn file-type?
   [exts file]
@@ -47,21 +46,30 @@
              {:status :multiple-movie-files
               :files (map io/absolute movie)}))))
 
-(defn parse-letter
-  [root category letter]
-  (let [path (str root "/" category "/" letter)]
-    (if (io/exists? path)
-      (->> path
-           (io/list)
-           (filter io/directory?)
-           (map parse-item)
-           (map #(assoc % :letter letter :category category)))
-      [])))
+(defn parse-dir
+  [path]
+  (->> path
+       (io/list)
+       (filter io/directory?)
+       (map parse-item)))
 
-(defn parse-category
-  [root category]
-  (flatten (map (partial parse-letter root category) alphabet)))
+(defn parse-letter-directory
+  [path]
+  (if (io/exists? path)
+    (->> path
+         (io/list)
+         (filter io/directory?)
+         (map parse-item))
+    []))
+
+(defn parse-category-directory
+  [path]
+  (letfn [(letter-entry [letter]
+            (let [letter-path (str path "/" (str/lower-case letter))]
+              (map #(assoc % :letter letter) (parse-letter-directory letter-path))))]
+    (flatten (map letter-entry alphabet))))
 
 (defn load
   [root]
-  (flatten (map (partial parse-category root) ["watched" "unwatched"])))
+  (concat (parse-category-directory (str root "/unwatched"))
+          (parse-category-directory (str root "/watched"))))

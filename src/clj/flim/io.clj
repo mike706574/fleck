@@ -67,3 +67,15 @@
 (defn list
   [arg]
   (.listFiles (file arg)))
+
+(defn write-edn
+  [path data]
+  (with-open [writer (io/writer path)]
+    (print-method data writer)))
+
+(defn read-edn
+  [path]
+  (with-open [reader (java.io.PushbackReader.
+                      (clojure.java.io/reader path))]
+    (binding [*read-eval* false]
+      (read reader))))
