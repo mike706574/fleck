@@ -1,8 +1,8 @@
-(ns flim.storage-test
+(ns movie-server.storage-test
   (:require [clojure.test :refer :all]
-            [flim.io :as io]
+            [movie-server.io :as io]
             [clojure.zip :as zip]
-            [flim.storage :as storage]))
+            [movie-server.storage :as storage]))
 
 (deftest file-type?
   (is (true? (storage/file-type? [".txt"] "foo.txt")))

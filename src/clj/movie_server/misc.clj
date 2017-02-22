@@ -1,4 +1,4 @@
-(ns flim.misc
+(ns movie-server.misc
   (:require [clojure.string :as str]))
 
 (defn split-on

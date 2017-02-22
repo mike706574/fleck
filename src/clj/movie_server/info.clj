@@ -1,9 +1,9 @@
-(ns flim.info
+(ns movie-server.info
   (:require [clojure.set :as set]
             [clojure.string :as str]
             [taoensso.timbre :as log]
-            [flim.date :as date]
-            [flim.moviedb-client :as moviedb]))
+            [movie-server.date :as date]
+            [movie-server.moviedb-client :as moviedb]))
 
 (def api-key "")
 

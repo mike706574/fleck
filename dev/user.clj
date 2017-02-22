@@ -13,10 +13,10 @@
    [clojure.tools.namespace.repl :refer [refresh refresh-all]]
    [clojure.data.json :as json]
    [com.stuartsierra.component :as component]
-   [flim.system :as system]
+   [movie-server.system :as system]
    [clj-http.client :as http]))
 
-(def config {:id "flim" :port 8000})
+(def config {:id "movie-server" :port 8000})
 
 (defonce system nil)
 

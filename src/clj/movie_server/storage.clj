@@ -1,6 +1,6 @@
-(ns flim.storage
+(ns movie-server.storage
   (:refer-clojure :exclude [load])
-  (:require [flim.io :as io]
+  (:require [movie-server.io :as io]
             [clojure.string :as str]
             [taoensso.timbre :as log]))
 

@@ -1,4 +1,4 @@
-(ns flim.system
+(ns movie-server.system
   (:require  [clojure.string :as str]))
 
 (def syllables #{"ta" "la" "ba" "ti" "do" "so" "re" "ton" "ma" "na" "da" "to"

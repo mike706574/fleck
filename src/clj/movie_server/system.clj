@@ -1,15 +1,15 @@
-(ns flim.system
+(ns movie-server.system
   (:require [clojure.string :as str]
             [taoensso.timbre :as log]
             [yada.yada :as yada]
             [bidi.bidi :as bidi]
             [yada-component.core :as yada-component]
-            [flim.date :as date]
-            [flim.info :as info]
-            [flim.moviedb-client :as moviedb]
-            [flim.io :as io]
-            [flim.misc :as misc]
-            [flim.storage :as storage]))
+            [movie-server.date :as date]
+            [movie-server.info :as info]
+            [movie-server.moviedb-client :as moviedb]
+            [movie-server.io :as io]
+            [movie-server.misc :as misc]
+            [movie-server.storage :as storage]))
 
 (defn merge-info
   [{title :title :as movie}]

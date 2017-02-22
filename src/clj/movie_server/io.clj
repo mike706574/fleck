@@ -1,4 +1,4 @@
-(ns flim.io
+(ns movie-server.io
   (:refer-clojure :exclude [name list])
   (:require [clojure.java.io :as io]
             [potemkin :as potemkin]))

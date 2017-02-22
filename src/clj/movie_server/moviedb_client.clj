@@ -1,4 +1,4 @@
-(ns flim.moviedb-client
+(ns movie-server.moviedb-client
   (:require [clojure.string :as str]
             [clojure.data.json :as json]
             [taoensso.timbre :as log]

@@ -1,4 +1,4 @@
-(ns flim.date
+(ns movie-server.date
   (:refer-clojure :exclude [format]))
 
 (defn format

@@ -1,1 +1,1 @@
-web: java $JVM_OPTS -cp target/fleck-standalone.jar clojure.main -m fleck.main
+web: java $JVM_OPTS -cp target/movie-server.jar clojure.main -m movie-server.main
