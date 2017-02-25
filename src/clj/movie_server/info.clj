@@ -5,13 +5,14 @@
             [movie-server.date :as date]
             [movie-server.moviedb-client :as moviedb]))
 
-(def api-key "")
+(def api-key "7197608cef1572f5f9e1c5b184854484")
 
 (defn get-info
   [title]
   (let [{:keys [status body] :as response} (moviedb/search-movie api-key title)]
     (if-not (= status :ok)
       {:status :error :body response}
+      ;; TODO: Handle multiple results. Filter by title.
       (if-let [info (first (:results body))]
         (let [{:keys [status body] :as response} (moviedb/get-movie api-key (:id info))]
           (if (= status :ok)
@@ -41,13 +42,14 @@
 (defn process-info
   [info]
   (-> info
-      (set/rename-keys {:title :moviedb-title
-                        :id :moviedb-id})
+      (set/rename-keys {:title :tmdb-title
+                        :id :tmdb-id})
       (update :release-date handle-date)
       (update :overview (partial shorten 150))
-      (select-keys [:moviedb-id
+      (select-keys [:title
+                    :tmdb-title
+                    :tmdb-id
                     :imdb-id
-                    :title
                     :release-date
                     :overview
                     :backdrop-path])))

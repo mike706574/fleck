@@ -36,7 +36,9 @@
              0 {:status :no-movie-files}
              1 (let [file (io/name (first movie))]
                  (case (count subtitles)
-                   0 {:status :ok :file file}
+                   0 {:status :ok
+                      :file file
+                      :subtitles nil}
                    1 {:status :ok
                       :file file
                       :subtitles (io/name (first subtitles))}

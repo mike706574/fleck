@@ -1,10 +1,11 @@
 (ns movie-server.system
   (:require [clojure.string :as str]
             [taoensso.timbre :as log]
+            [schema.core :as s]
             [yada.yada :as yada]
             [bidi.bidi :as bidi]
-            [yada-component.core :as yada-component]
             [movie-server.date :as date]
+            [movie-server.component :as component]
             [movie-server.info :as info]
             [movie-server.moviedb-client :as moviedb]
             [movie-server.io :as io]
@@ -18,6 +19,38 @@
       (merge movie (info/process-info body))
       (assoc movie :status status))))
 
+(def Movie {:status s/Keyword
+            :title s/Str
+            :tmdb-title s/Str
+            :tmdb-id s/Int
+            :imdb-id s/Str
+            :directory s/Str
+            :file s/Str
+            :letter s/Str
+            :release-date s/Str
+            :overview (s/maybe s/Str)
+            :backdrop-path (s/maybe s/Str)
+            :subtitles (s/maybe s/Str)})
+
+(def MoviesByLetter {s/Str [Movie]})
+
+(def movies (io/read-edn "/mnt/Mammoth/movies-by-letter.edn"))
+
+
+(doseq [movie (get movies "C")]
+  (when-not (:release-date movie)
+    (println movie)
+    )
+;;  (s/validate Movie movie)
+  )
+
+
+(defn map-movies
+  [f movies]
+  (letfn [(map-letter [[letter movies]]
+            [letter (map f movies)])]
+    (map map-letter movies)))
+
 (defn get-movies
   [path]
   (let [[stored-movies storage-problems] (misc/split-on #(= (:status %) :ok) (storage/load path))]
@@ -30,36 +63,34 @@
         {:movies (count movies)
          :storage-problems (count storage-problems)
          :info-problems (count info-problems)}))))
-
 (comment
-  (let [movies (io/read-edn "/mnt/Mammoth/movies.edn")]
-    (map (fn [movie]
-           (if (nil? (:backdrop-path movie))
-             (assoc movie :backdrop-path)
-             )
-           )
-     movies)
-
-    )
-
   (get-movies "/mnt/Mammoth")
-  (get-movies "/mnt/Mammoth/test"))
+  )
+
+
+
+(defn movie-resource
+  [movies]
+  {:access-control {:allow-origin "*"}
+   :methods
+   {:get {:produces {:media-type #{"application/json"}
+                     :language #{"en"}}
+          :response (fn [request]
+                      (log/info "Returning movies!")
+                      @movies)}
+    :post {:parameters nil
+           :produces {:media-type #{"application/json"}
+                      :language #{"en"}}
+           :response (fn [request]
+                       (log/info "Returning movies!")
+                       @movies)}}})
 
 (defn routes
   [movies]
-  ["" [["/movies" (yada/resource
-                   {:access-control {:allow-origin "*"}
-                    :methods
-                    {:get
-                     {:produces
-                      {:media-type #{"application/edn" "application/json"}
-                       :language #{"en"}}
-                      :response (fn [request]
-                                  (log/info "Returning movies!")
-                                  movies)}}})]
+  ["" [["/movies" (yada/resource (movie-resource movies))]
        [true (yada/handler nil)]]])
 
 (defn system
   [config]
   (let [movies (io/read-edn "/mnt/Mammoth/movies-by-letter.edn")]
-    {:app (yada-component/yada-service config (routes movies))}))
+    {:app (component/movie-service config (routes (atom movies)))}))

@@ -1,4 +1,4 @@
-(ns yada-component.core
+(ns movie-server.component
   (:require [com.stuartsierra.component :as component]
             [taoensso.timbre :as log]
             [yada.yada :as yada]
@@ -33,7 +33,7 @@
   (log/info (str id " already stopped."))
   service)
 
-(defrecord YadaService [id port routes server]
+(defrecord MovieService [id port routes server]
   component/Lifecycle
   (start [this]
     (if server
@@ -44,9 +44,9 @@
       (stop-service this)
       (already-stopped this))))
 
-(defn yada-service
+(defn movie-service
   [{:keys [port] :as config} routes]
   {:pre [(integer? port)
          (> port 0)
          (vector? routes)]}
-  (component/using (map->YadaService (assoc config :routes routes)) []))
+  (component/using (map->MovieService (assoc config :routes routes)) []))

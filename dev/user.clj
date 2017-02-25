@@ -60,33 +60,4 @@
   (stop)
   (go))
 
-(comment :scratch
-         (def syllables #{"ta"
-                          "la"
-                          "ba"
-                          "ti"
-                          "do"
-                          "so"
-                          "re"
-                          "ton"
-                          "ma"
-                          "na"
-                          "da"
-                          "to"
-                          "ro"
-                          "go"})
-
-         (defn nonsense []
-           (let [syllable-count (+ 2 (rand-int 2))
-                 rand-syllable #(rand-nth (vec syllables))]
-             (str/join syllable-count (repeatedly rand-syllable))))
-
-         #(rand-nth (vec syllables))
-         (nonsense)
-
-
-         (take 10 (repeatedly ))
-
-         (take 3 (json/read-str (:body (http/get "http://192.168.1.141:8000/movies")) :key-fn keyword))
-
-         )
+(comment :scratch)

@@ -4,7 +4,7 @@
                  [com.stuartsierra/component "0.3.1"]
                  [potemkin "0.4.3"]
                  [aleph "0.4.1"]
-                 [yada "1.2.0"]
+                 [yada "1.2.1"]
                  [bidi "2.0.16"]
                  [environ "1.1.0"]
                  [prismatic/schema "1.1.3"]]
