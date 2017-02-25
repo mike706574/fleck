@@ -19,31 +19,6 @@
       (merge movie (info/process-info body))
       (assoc movie :status status))))
 
-(def Movie {:status s/Keyword
-            :title s/Str
-            :tmdb-title s/Str
-            :tmdb-id s/Int
-            :imdb-id s/Str
-            :directory s/Str
-            :file s/Str
-            :letter s/Str
-            :release-date s/Str
-            :overview (s/maybe s/Str)
-            :backdrop-path (s/maybe s/Str)
-            :subtitles (s/maybe s/Str)})
-
-(def MoviesByLetter {s/Str [Movie]})
-
-(def movies (io/read-edn "/mnt/Mammoth/movies-by-letter.edn"))
-
-
-(doseq [movie (get movies "C")]
-  (when-not (:release-date movie)
-    (println movie)
-    )
-;;  (s/validate Movie movie)
-  )
-
 
 (defn map-movies
   [f movies]
@@ -63,11 +38,33 @@
         {:movies (count movies)
          :storage-problems (count storage-problems)
          :info-problems (count info-problems)}))))
+
+
+(def Movie {:status s/Keyword
+            :title s/Str
+            :tmdb-title s/Str
+            :tmdb-id s/Int
+            :imdb-id s/Str
+            :directory s/Str
+            :file s/Str
+            :letter s/Str
+            :release-date s/Str
+            :overview (s/maybe s/Str)
+            :backdrop-path (s/maybe s/Str)
+            :subtitles (s/maybe s/Str)})
+
+(def MoviesByLetter {s/Str [Movie]})
+
 (comment
-  (get-movies "/mnt/Mammoth")
-  )
+  (def movies (io/read-edn "/mnt/Mammoth/movies-by-letter.edn"))
 
 
+  (doseq [movie (get movies "C")]
+    (when-not (:release-date movie)
+      (println movie)
+      )
+    ;;  (s/validate Movie movie)
+    ))
 
 (defn movie-resource
   [movies]
@@ -77,13 +74,7 @@
                      :language #{"en"}}
           :response (fn [request]
                       (log/info "Returning movies!")
-                      @movies)}
-    :post {:parameters nil
-           :produces {:media-type #{"application/json"}
-                      :language #{"en"}}
-           :response (fn [request]
-                       (log/info "Returning movies!")
-                       @movies)}}})
+                      @movies)}}})
 
 (defn routes
   [movies]
@@ -92,5 +83,7 @@
 
 (defn system
   [config]
-  (let [movies (io/read-edn "/mnt/Mammoth/movies-by-letter.edn")]
+  (log/info "Reading movies...")
+  (let [movies (io/read-edn-resource "movies-by-letter.edn")]
+    (log/info "Read movies!")
     {:app (component/movie-service config (routes (atom movies)))}))

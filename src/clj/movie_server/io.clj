@@ -76,6 +76,15 @@
 (defn read-edn
   [path]
   (with-open [reader (java.io.PushbackReader.
-                      (clojure.java.io/reader path))]
+                      (io/reader path))]
+    (binding [*read-eval* false]
+      (read reader))))
+
+(defn read-edn-resource
+  [path]
+  (with-open [reader (-> path
+                         (io/resource)
+                         (io/reader)
+                         (java.io.PushbackReader.))]
     (binding [*read-eval* false]
       (read reader))))
