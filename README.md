@@ -1,6 +1,6 @@
 # movie-server
 
-A project.
+A webservice for retrieving a movie collection.
 
 ## Copyright and License
 
