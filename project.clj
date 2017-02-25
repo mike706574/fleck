@@ -1,4 +1,11 @@
 (defproject mike/movie-server "0.0.1-SNAPSHOT"
+  :description "A webservice for retrieving a movie collection."
+  :url "https://github.com/mike706574/movie-server"
+  :license {:name "Eclipse Public License - v 1.0"
+            :url "http://www.eclipse.org/legal/epl-v10.html"
+            :distribution :repo
+            :comments "same as Clojure"}
+  :min-lein-version "2.0.0"
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/data.json "0.2.6"]
                  [com.taoensso/timbre "4.8.0"]
@@ -10,7 +17,6 @@
                  [bidi "2.0.16"]
                  [environ "1.1.0"]
                  [prismatic/schema "1.1.3"]]
-  :min-lein-version "2.0.0"
   :source-paths ["src/clj"]
   :test-paths ["test/clj"]
   :plugins [[lein-environ "1.1.0"]]
