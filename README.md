@@ -2,6 +2,8 @@
 
 A webservice for retrieving a movie collection.
 
+Uses [aleph](https://github.com/ztellman/aleph), [bidi](https://github.com/juxt/bidi) and [yada](https://github.com/juxt/yada).
+
 ## Copyright and License
 
 The use and distribution terms for this software are covered by the
