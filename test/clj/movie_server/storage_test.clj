@@ -10,6 +10,6 @@
   (is (true? (storage/file-type? [".txt" ".gif"] "foo.gif"))))
 
 (deftest classify-file?
-  (is (= :video (storage/classify-file "foo.avi")))
+  (is (= :movie (storage/classify-file "foo.avi")))
   (is (= :subtitles (storage/classify-file "foo.srt")))
   (is (= :other (storage/classify-file "foo.gif"))))

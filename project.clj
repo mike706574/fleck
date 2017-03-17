@@ -12,7 +12,7 @@
                  [com.stuartsierra/component "0.3.1"]
                  [potemkin "0.4.3"]
                  [clj-http "3.4.1"]
-                 [aleph "0.4.1"]
+                 [aleph "0.4.3"]
                  [yada "1.2.1"]
                  [bidi "2.0.16"]
                  [environ "1.1.0"]
