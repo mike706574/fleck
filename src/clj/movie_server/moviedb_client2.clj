@@ -5,42 +5,43 @@
             [taoensso.timbre :as log]
             [clj-http.client :as http]))
 
-(defn with-retry
-  [retry-options retryable-statuses execute-request handle-response]
-  (let [{:keys [initial-wait wait-increase max-attempts]} retry-options]
-    (loop [i 1 wait initial-wait]
-      (let [{:keys [status body] :as response} (execute-request)]
-        (if (retryable-statuses status)
-          (if (> i max-attempts)
-            (do (log/error (str "Rejected after " max-attempts" attempts."))
-                {:status :retry-exhaustion})
-            (do (log/error (str "Attempt " i " of " max-attempts " rejected. Sleeping for " wait " ms."))
-                (Thread/sleep wait)
-                (recur (inc i) (+ wait wait-increase))))
-          (handle-response response))))))
+(defn retry? [response] (= (:status response) 429))
 
-(def ^:dynamic *get-retry-options* {:initial-wait 0
-                                    :wait-increase 200
-                                    :max-attempts 20})
+(defprotocol MovieClient
+  (get-movie [this id]))
 
-(defn get-movie
-  [api-key id]
-  (log/debug (str "Getting movie with identifier \"" id "\"."))
-  (with-retry *get-retry-options* #{429}
-    #(http/get (str "https://api.themoviedb.org/3/movie/" id)
-               {:query-params {"api_key" api-key}
-                :headers {"Content-Type" "application/json;charset=utf8"}
-                :throw-exceptions false})
-    #(let [{:keys [status body] :as response} %]
-       (case status
-         200 {:status :ok :body (json/read-str body :key-fn misc/dashed-keyword)}
-         404 {:status :not-found :body body}
-         {:status :error :body body}))))
+(defrecord TMDbMovieClient [url api-key retry-options]
+  MovieClient
+  (get-movie [this id]
+    (let [url (str url "/movie/" id)]
+      (log/debug (str "Getting movie with identifier \"" id " from " url "."))
+      (misc/with-retry retry-options
+        retry?
+        #(http/get url
+          {:query-params {"api_key" api-key}
+           :headers {"Content-Type" "application/json;charset=utf8"}
+           :throw-exceptions false})
+        #(let [{:keys [status body] :as response} %]
+           (case status
+             200 {:status :ok :body (json/read-str body :key-fn misc/dashed-keyword)}
+             404 {:status :not-found :body body}
+             {:status :error :body body}))
+        (constantly {:status :retry-exhaustion})))))
 
+(defn movie-client
+  [{:keys [movie-api-url movie-api-key movie-api-retry-options]}]
+  (map->TMDbMovieClient {:url movie-api-url
+                         :api-key movie-api-key
+                         :retry-options movie-api-retry-options}))
 
-(def api-key "7197608cef1572f5f9e1c5b184854484")
+(def config {:movie-api-url "https://api.themoviedb.org/3"
+             :movie-api-key "foo"
+             :movie-api-retry-options {:initial-wait 1000
+                                       :wait-increase 100
+                                       :max-attempts 3}})
 
 (comment
-  (get-movie api-key "2")
+  (def client (movie-client config))
+  (get-movie client 2)
 
   )
