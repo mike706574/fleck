@@ -1,4 +1,4 @@
-(ns movie-server.component
+(ns movie-server.service
   (:require [com.stuartsierra.component :as component]
             [taoensso.timbre :as log]
             [yada.yada :as yada]

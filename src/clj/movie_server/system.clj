@@ -5,7 +5,7 @@
             [yada.yada :as yada]
             [bidi.bidi :as bidi]
             [movie-server.date :as date]
-            [movie-server.component :as component]
+            [movie-server.service :as service]
             [movie-server.info :as info]
             [movie-server.moviedb-client :as moviedb]
             [movie-server.io :as io]
@@ -39,7 +39,6 @@
          :storage-problems (count storage-problems)
          :info-problems (count info-problems)}))))
 
-
 (def Movie {:status s/Keyword
             :title s/Str
             :tmdb-title s/Str
@@ -57,7 +56,6 @@
 
 (comment
   (def movies (io/read-edn "/mnt/Mammoth/movies-by-letter.edn"))
-
 
   (doseq [movie (get movies "C")]
     (when-not (:release-date movie)

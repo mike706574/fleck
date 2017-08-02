@@ -24,3 +24,7 @@
   (if (> (count string) length)
     (str (str/trim (str/join (take length string))) "...")
     string))
+
+(defn dashed-keyword
+  [s]
+  (keyword (str/replace s #"_" "-")))
