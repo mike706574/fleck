@@ -1,88 +1,54 @@
-(ns movie-server.moviedb-client
+(ns movie-server.moviedb-client2
   (:require [clojure.string :as str]
             [clojure.data.json :as json]
+            [movie-server.misc :as misc]
             [taoensso.timbre :as log]
             [clj-http.client :as http]))
 
-(defn dashed-keyword
-  [s]
-  (keyword (str/replace s #"_" "-")))
+(defn ^:private retry-statuses
+  [statuses]
+  (fn retry? [response]
+    (contains? (set statuses) (:status response))))
 
-(def ^:dynamic *initial-search-wait* 0)
-(def ^:dynamic *search-wait-increase* 200)
-(def ^:dynamic *max-search-attempts* 20)
+(defn ^:private get-request
+  [url query-params retry-options]
+  (let [{:keys [status body]} (misc/with-retry
+                                (fn execute-request []
+                                  (http/get url
+                                            {:query-params query-params
+                                             :headers {"Content-Type" "application/json;charset=utf8"}
+                                             :throw-exceptions false}))
+                                (retry-statuses #{429})
+                                (fn next-wait [wait] (+ wait 100))
+                                retry-options)]
+    (case status
+      200 {:status :ok :body (json/read-str body :key-fn misc/dashed-keyword)}
+      429 {:status :retry-exhaustion}
+      404 {:status :not-found :body body}
+      {:status :error :body body})))
 
-(defn search-movie
-  [api-key query]
-  (log/debug (str "Searching for \"" query "\"."))
-  (loop [i 1
-         wait *initial-search-wait*]
-    (let [{:keys [status body] :as response}
-          (http/get "https://api.themoviedb.org/3/search/movie"
-                    {:query-params {"query" query
-                                    "api_key" api-key}
-                     :headers {"Content-Type" "application/json;charset=utf8"}
-                     :throw-exceptions false})]
-      (log/debug (str "Got a " status "."))
-      (case status
-        200 {:status :ok :body (json/read-str body :key-fn dashed-keyword)}
-        429 (if (> i *max-search-attempts*)
-              (do (log/error (str "Search for " query " rejected after " *max-search-attempts* " attempts."))
-                  {:status :retry-exhaustion})
-              (do (log/error (str "Search attempt " i " of " *max-search-attempts* " rejected. Sleeping for " wait " ms."))
-                  (Thread/sleep wait)
-                  (recur (inc i) (+ wait *search-wait-increase*))))
-        404 {:status :not-found :body body}
-        {:status :error :body body}))))
+(defprotocol MovieClient
+  (get-config [this])
+  (get-movie [this id])
+  (search-movies [this query]))
 
-(def ^:dynamic *initial-get-wait* 0)
-(def ^:dynamic *get-wait-increase* 200)
-(def ^:dynamic *max-get-attempts* 20)
+(defrecord TMDbMovieClient [url api-key retry-options]
+  MovieClient
+  (get-config [this]
+    (let [url (str url "/configuration")]
+      (get-request url {"api_key" api-key} retry-options)))
 
-(defn get-movie
-  [api-key id]
-  (log/debug (str "Getting movie with identifier \"" id "\"."))
-  (loop [i 1
-         wait *initial-get-wait*]
-    (let [{:keys [status body] :as response}
-          (http/get (str "https://api.themoviedb.org/3/movie/" id)
-                    {:query-params {"api_key" api-key}
-                     :headers {"Content-Type" "application/json;charset=utf8"}
-                     :throw-exceptions false})]
-      (log/debug (str "Got a " status "."))
-      (case status
-        200 {:status :ok :body (json/read-str body :key-fn dashed-keyword)}
-        429 (if (> i *max-get-attempts*)
-              (do (log/error (str "Get for " id " rejected after " *max-get-attempts*" attempts."))
-                  {:status :retry-exhaustion})
-              (do (log/error (str "Get attempt " i " of " *max-get-attempts* " rejected. Sleeping for " wait " ms."))
-                  (Thread/sleep wait)
-                  (recur (inc i) (+ wait *get-wait-increase*))))
+  (get-movie [this id]
+    (let [url (str url "/movie/" id)]
+      (log/debug (str "Getting movie with identifier \"" id " from " url "."))
+      (get-request url {"api_key" api-key} retry-options)))
 
-        404 {:status :not-found :body body}
-        {:status :error :body body}))))
+  (search-movies [this query]
+    (let [url (str url "/search/movie")]
+      (get-request url {"query" query "api_key" api-key} retry-options))))
 
-(def ^:dynamic *initial-config-wait* 0)
-(def ^:dynamic *config-wait-increase* 200)
-(def ^:dynamic *max-config-attempts* 20)
-
-(defn get-config
-  [api-key]
-  (loop [i 1
-         wait *initial-config-wait*]
-    (let [{:keys [status body] :as response}
-          (http/get (str "https://api.themoviedb.org/3/configuration")
-                    {:query-params {"api_key" api-key}
-                     :headers {"Content-Type" "application/json;charset=utf8"}
-                     :throw-exceptions false})]
-      (log/debug (str "Got a " status "."))
-      (case status
-        200 {:status :ok :body (json/read-str body :key-fn dashed-keyword)}
-        429 (if (> i *max-config-attempts*)
-              (do (log/error (str "Attempt to retrieve config rejected after " *max-config-attempts* " attempts."))
-                  {:status :retry-exhaustion})
-              (do (log/error (str "Attempt to retrieve config " i " of " *max-config-attempts* " rejected. Sleeping for " wait " ms."))
-                  (Thread/sleep wait)
-                  (recur (inc i) (+ wait *config-wait-increase*))))
-        404 {:status :not-found :body body}
-        {:status :error :body body}))))
+(defn movie-client
+  [{:keys [movie-api-url movie-api-key movie-api-retry-options]}]
+  (map->TMDbMovieClient {:url movie-api-url
+                         :api-key movie-api-key
+                         :retry-options movie-api-retry-options}))

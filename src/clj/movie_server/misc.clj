@@ -1,6 +1,5 @@
 (ns movie-server.misc
   (:require [clojure.string :as str]
-            [movie-server.misc :as misc]
             [taoensso.timbre :as log]))
 
 (defn pretty [form] (with-out-str (clojure.pprint/pprint form)))
@@ -34,22 +33,17 @@
   (keyword (str/replace s #"_" "-")))
 
 (defn with-retry
-  ([opts retry? operation]
-   (retry opts retry? operation identity))
-  ([opts retry? operation on-success]
-   (retry opts retry? operation on-success (constantly nil)))
-  ([opts retry? operation on-success on-failure]
-   (let [{:keys [initial-wait wait-increase max-attempts]
-          :or {initial-wait 0 wait-increase 100 max-attempts 10}} opts]
-     (loop [i 1 wait initial-wait]
-       (let [output (operation)]
-         (log/trace (str "Attempt " i " output: " (misc/pretty output)))
-         (if (retry? output)
-           (if (> i max-attempts)
-             (do (log/error (str "Failed after " max-attempts" attempts."))
-
-                 (on-failure output))
-             (do (log/warn (str "Attempt " i " of " max-attempts " failed. Sleeping for " wait " ms."))
-                 (Thread/sleep wait)
-                 (recur (inc i) (+ wait wait-increase))))
-           (on-success output)))))))
+  [operation retry? next-wait opts]
+  (let [{:keys [initial-wait max-attempts] :or {initial-wait 0}} opts]
+    (loop [i 1
+           wait initial-wait]
+      (let [output (operation)]
+        (log/trace (str "Attempt " i " output: " (pretty output)))
+        (if (retry? output)
+          (if (> i max-attempts)
+            (do (log/error (str "Failed after " max-attempts" attempts."))
+                output)
+            (do (log/warn (str "Attempt " i " of " max-attempts " failed. Sleeping for " wait " ms."))
+                (Thread/sleep wait)
+                (recur (inc i) (next-wait wait))))
+          output)))))

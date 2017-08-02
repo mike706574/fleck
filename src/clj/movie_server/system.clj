@@ -84,4 +84,4 @@
   (log/info "Reading movies...")
   (let [movies (io/read-edn-resource "movies-by-letter.edn")]
     (log/info "Read movies!")
-    {:app (component/movie-service config (routes (atom movies)))}))
+    {:app (service/movie-service config (routes (atom movies)))}))
