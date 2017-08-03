@@ -1,4 +1,4 @@
-(ns movie-server.moviedb-client2
+(ns movie-server.moviedb-client
   (:require [clojure.string :as str]
             [clojure.data.json :as json]
             [movie-server.misc :as misc]
@@ -52,3 +52,14 @@
   (map->TMDbMovieClient {:url movie-api-url
                          :api-key movie-api-key
                          :retry-options movie-api-retry-options}))
+
+(comment
+  (def config {:movie-api-url "https://api.themoviedb.org/3"
+               :movie-api-key "7197608cef1572f5f9e1c5b184854484"
+               :movie-api-retry-options {:initial-wait 0
+                                         :max-attempts 3}})
+
+  (def client (movie-client config))
+
+  (get-config client)
+  )

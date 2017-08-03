@@ -9,7 +9,7 @@
 
 (defn get-info
   [title]
-  (let [{:keys [status body] :as response} (moviedb/search-movie api-key title)]
+  (let [{:keys [status body] :as response} (moviedb/search-movies api-key title)]
     (if-not (= status :ok)
       {:status :error :body response}
       ;; TODO: Handle multiple results. Filter by title.
